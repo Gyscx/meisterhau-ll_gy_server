@@ -1561,7 +1561,7 @@
 					]
 				},
 				{
-					"name": "weapon",
+					"name": "m_weapon",
 					"parent": "rerot",
 					"pivot": [
 						0,
@@ -1570,7 +1570,7 @@
 					]
 				},
 				{
-					"name": "weapon2",
+					"name": "m_weapon2",
 					"parent": "rerot",
 					"pivot": [
 						0,
