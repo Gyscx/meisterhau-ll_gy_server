@@ -13,7 +13,7 @@
 			"bones": [
 				{
 					"name": "rightItem",
-					"pivot": [-6, 15, 1]
+					"pivot": [-6, 13, -8]
 				},
 				{
 					"name": "weapon",
