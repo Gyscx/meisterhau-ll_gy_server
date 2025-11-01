@@ -13,7 +13,7 @@
 			"bones": [
 				{
 					"name": "rightItem",
-					"pivot": [-6, 15, 1]
+					"pivot": [-6, 13, -1]
 				},
 				{
 					"name": "100",
@@ -240,22 +240,12 @@
 					]
 				},
 				{
-					"name": "Waist",
-					"pivot": [0, 12, 0]
-				},
-				{
-					"name": "Body",
-					"parent": "Waist",
-					"pivot": [0, 24, 0]
-				},
-				{
-					"name": "Body_Down",
-					"parent": "Body",
-					"pivot": [0, 12, 0]
+					"name": "waistSaya",
+					"pivot": [4, 11.7, 2.2]
 				},
 				{
 					"name": "200",
-					"parent": "Body_Down",
+					"parent": "waistSaya",
 					"pivot": [4, 13, -1.6],
 					"cubes": [
 						{

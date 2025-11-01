@@ -13,7 +13,7 @@
 			"bones": [
 				{
 					"name": "rightItem",
-					"pivot": [-6, 15, 1]
+					"pivot": [-6, 13, 1]
 				},
 				{
 					"name": "100",
@@ -417,7 +417,7 @@
 				},
 				{
 					"name": "leftItem",
-					"pivot": [6, 15, 1]
+					"pivot": [6, 13, 1]
 				},
 				{
 					"name": "2",
