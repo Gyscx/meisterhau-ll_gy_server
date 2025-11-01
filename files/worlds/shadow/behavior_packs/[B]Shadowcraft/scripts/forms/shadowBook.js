@@ -220,7 +220,7 @@ function equipment_sets(player) {
         .button('军团-稀有-A')
         .button('军团-稀有-B')
         .button('军团-史诗-A')
-        .button('军团-传奇-退位者', 'textures/abdicator')
+        .button('军团-传奇-让位者', 'textures/abdicator')
         .button('王朝-普通-A')
     form.show(player).then(t => {
         if (t.canceled) {
@@ -334,7 +334,7 @@ function legion_legendary_abdicator(player) {
             player.runCommand('scoreboard players add @s gem 30')
             player.runCommand('give @s sf:shadow_energy 30')
             player.addTag('collect_legion_legendary_abdicator')
-            player.sendMessage('§a你已成功领取军团-传奇-退位者套装的奖励')
+            player.sendMessage('§a你已成功领取军团-传奇-让位者套装的奖励')
         }
         if (t.selection == 0 && player.hasTag('collect_legion_legendary_abdicator')) {
             player.sendMessage('§a你已领取过该套装的奖励')
