@@ -47,8 +47,8 @@ export class TargetLock extends BaseComponent {
     onAttach() {
         if (this.sourceIsPlayer) {
             this.source.use(p => {
-                mc.runcmdEx(`/inputpermission set ${p.name} jump disabled`)
-                mc.runcmdEx(`/inputpermission set ${p.name} sneak disabled`)
+                mc.runcmdEx(`/inputpermission set "${p.name}" jump disabled`)
+                mc.runcmdEx(`/inputpermission set "${p.name}" sneak disabled`)
             })
         }
     }
@@ -67,8 +67,8 @@ export class TargetLock extends BaseComponent {
         if (this.sourceIsPlayer) {
             this.source.use(p => {
                 this.onLoseLock.call()
-                mc.runcmdEx(`/inputpermission set ${p.name} jump enabled`)
-                mc.runcmdEx(`/inputpermission set ${p.name} sneak enabled`)
+                mc.runcmdEx(`/inputpermission set "${p.name}" jump enabled`)
+                mc.runcmdEx(`/inputpermission set "${p.name}" sneak enabled`)
             })
         }
     }

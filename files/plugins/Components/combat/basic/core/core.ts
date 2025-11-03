@@ -526,7 +526,12 @@ function listenPlayerItemChange(mods: Map<string, TrickModule>) {
         releaseTarget(pl.uniqueId)
 
         if (oldBind) {
-            const move = oldBind.moves.getMove(status.status)
+            const moves = oldBind.moves
+            if (!moves.hasMove(status.status)) {
+                return
+            }
+
+            const move = moves.getMove(status.status)
             if (move?.onLeave) {
                 move.onLeave(pl, _ctx(pl))
             }

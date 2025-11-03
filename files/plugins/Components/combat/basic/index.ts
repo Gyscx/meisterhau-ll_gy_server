@@ -82,7 +82,7 @@ export function playAnimEntity(en: Entity, anim: string, nextAnim?: string, time
  * @param minVolume - 最小音量（可选）
  */
 export function playSound(pl: Player, sound: string, pos: Pos3, volume?: number, pitch?: number, minVolume?: number) {
-    mc.runcmdEx(`/playsound ${sound} ${pl.name} ` + [
+    mc.runcmdEx(`/playsound ${sound} "${pl.name}" ` + [
         pos.x, pos.y, pos.z, volume, pitch, minVolume
     ].join(' '))
 }
