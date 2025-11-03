@@ -111,7 +111,7 @@ export class ActorHelper {
      * @param actor - 演员对象
      * @returns
      */
-    static pos(actor: Actor): Optional<Vector> {
+    static pos(actor: Actor): Optional<FloatPos> {
         return Optional.some(actor?.pos)
     }
 
@@ -120,7 +120,7 @@ export class ActorHelper {
      * @param actor - 演员对象
      * @returns
      */
-    static position(actor: Actor): Vector {
+    static position(actor: Actor): FloatPos {
         return actor?.pos ?? VectorHelper.zero()
     }
 }

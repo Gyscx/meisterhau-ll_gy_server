@@ -3,7 +3,8 @@ import { InputSimulator } from "../inputSimulator"
 import { Optional } from "@utils/optional"
 import { Status } from "../status"
 import { actorSelector } from "@combat/basic"
-import { Actor } from "@utils/actor"
+import { Actor, ActorHelper } from "@utils/actor"
+import { yawToVec2 } from "@utils/math"
 
 /**
  * AI动作类 - 扩展输入模拟器，提供AI特定的动作功能
@@ -53,19 +54,45 @@ export class AiActions extends InputSimulator {
             return false
         }
 
-        const entity = this.actor.unwrap().getEntityFromViewVector(length)
+        const actor = this.actor.unwrap()
+        const pos = ActorHelper.pos(actor)
+        if (pos.isEmpty()) {
+            return
+        }
+
+        const pos_ = pos.unwrap()
+        const entities: Actor[] = mc.getEntities(pos_, length).filter(en => en.uniqueId !== actor.uniqueId).concat(mc.getOnlinePlayers() as any[])
+        const entity = entities.find(en => {
+            const pos = ActorHelper.pos(en)
+            return pos.match(
+                false,
+                pos => {
+                    if (pos.dimid !== pos_.dimid) {
+                        return false
+                    }
+
+                    if (ActorHelper.isPlayer(en)) {
+                        if (en.distanceTo(actor) > length) {
+                            return false
+                        }
+                    }
+
+                    const dist = {
+                        x: pos_.x - pos.x,
+                        y: pos_.z - pos.z,
+                    }
+                    const dir = yawToVec2(en.direction.yaw)
+
+                    return dist.x * dir.x + dist.y * dir.y > 0
+                }
+            )
+        })
+
         if (!entity) {
             return false
         }
 
-        if (entity.isPlayer()) {
-            const player = entity.toPlayer()
-            if (player) {
-                this.setTarget(player)
-            }
-        } else {
-            this.setTarget(entity)
-        }
+        this.setTarget(entity)
 
         return true
     }

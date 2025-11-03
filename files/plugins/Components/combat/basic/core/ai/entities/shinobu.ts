@@ -45,7 +45,7 @@ export class Shinobu extends MeisterhauAI {
             await this.waitTick()
             // 如果正前方有玩家，则设置目标
             // 如果有别的需求（比如"看到"或"听到"），可以手动调用 setTarget
-            this.actions.setForwardActorAsTarget(8)
+            this.actions.setForwardActorAsTarget()
         }
 
         // 如果目标不在10格内，则放弃目标

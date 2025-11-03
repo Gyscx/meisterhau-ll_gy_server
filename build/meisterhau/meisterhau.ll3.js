@@ -9508,6 +9508,7 @@ async function knockback$1(en, x, z, h, v) {
     const nx = x / m;
     const nz = z / m;
     return await remote.call('knockback', en.uniqueId, nx * h, nz * h, h, v)
+    // return await remote.call('impulse', en.uniqueId, nx * v * 0.2, 0, nz * v * 0.2)
 }
 
 async function impulse(en, x, y, z) {
@@ -12053,19 +12054,36 @@ class AiActions extends InputSimulator {
         if (this.actor.isEmpty()) {
             return false;
         }
-        const entity = this.actor.unwrap().getEntityFromViewVector(length);
+        const actor = this.actor.unwrap();
+        const pos = ActorHelper.pos(actor);
+        if (pos.isEmpty()) {
+            return;
+        }
+        const pos_ = pos.unwrap();
+        const entities = mc.getEntities(pos_, length).filter(en => en.uniqueId !== actor.uniqueId).concat(mc.getOnlinePlayers());
+        const entity = entities.find(en => {
+            const pos = ActorHelper.pos(en);
+            return pos.match(false, pos => {
+                if (pos.dimid !== pos_.dimid) {
+                    return false;
+                }
+                if (ActorHelper.isPlayer(en)) {
+                    if (en.distanceTo(actor) > length) {
+                        return false;
+                    }
+                }
+                const dist = {
+                    x: pos_.x - pos.x,
+                    y: pos_.z - pos.z,
+                };
+                const dir = yawToVec2(en.direction.yaw);
+                return dist.x * dir.x + dist.y * dir.y > 0;
+            });
+        });
         if (!entity) {
             return false;
         }
-        if (entity.isPlayer()) {
-            const player = entity.toPlayer();
-            if (player) {
-                this.setTarget(player);
-            }
-        }
-        else {
-            this.setTarget(entity);
-        }
+        this.setTarget(entity);
         return true;
     }
     /**
@@ -12606,7 +12624,7 @@ class Shinobu extends MeisterhauAI {
             await this.waitTick();
             // 如果正前方有玩家，则设置目标
             // 如果有别的需求（比如"看到"或"听到"），可以手动调用 setTarget
-            this.actions.setForwardActorAsTarget(8);
+            this.actions.setForwardActorAsTarget();
         }
         // 如果目标不在10格内，则放弃目标
         if (this.sensing.hasTarget() && !this.sensing.targetInRange(10)) {
@@ -12674,26 +12692,31 @@ class Shinobu extends MeisterhauAI {
             if (this.hasAnyExecutingTasks()) {
                 continue;
             }
+            console.log(100);
             // 如果没有目标，则跳过
             if (!this.sensing.hasTarget()) {
                 continue;
             }
+            console.log(101);
             // 如果目标尝试格挡，则使用剑柄打击
             if (this.sensing.targetIsBlocking()) {
                 yield this.combo2;
                 continue;
             }
+            console.log(111);
             // 如果目标在2格内，则更多尝试执行连招2
             if (this.sensing.targetInRange(2) && Math.random() < 0.15) {
                 // 随机挑选连招
                 yield this.randomActions([1, this.combo1], [2, this.combo2]);
                 continue;
             }
+            console.log(222);
             // 如果目标在3格内，则更多尝试执行连招1
             if (this.sensing.targetInRange(3) && Math.random() < 0.15) {
                 // 随机挑选连招
                 yield this.randomActions([2, this.combo1], [1, this.combo2]);
             }
+            console.log(333);
         }
     }
     /**
@@ -13320,7 +13343,11 @@ function listenPlayerItemChange(mods) {
         }
         releaseTarget(pl.uniqueId);
         if (oldBind) {
-            const move = oldBind.moves.getMove(status.status);
+            const moves = oldBind.moves;
+            if (!moves.hasMove(status.status)) {
+                return;
+            }
+            const move = moves.getMove(status.status);
             if (move?.onLeave) {
                 move.onLeave(pl, _ctx(pl));
             }
@@ -13341,7 +13368,7 @@ function listenAllCustomEvents(mods) {
         if (!isEntity(actor)) {
             return getMod(getHandedItemType(actor));
         }
-        return ai.getRegistration(actor.type).tricks;
+        return ai.getRegistration(actor.type)?.tricks;
     }
     em.on('onTick', onTick(em));
     em.on('onTick', () => {
@@ -13633,7 +13660,7 @@ function listenAllMcEvents(collection) {
         if (!isEntity(actor)) {
             return getMod(getHandedItemType(actor));
         }
-        return ai.getRegistration(actor.type).tricks;
+        return ai.getRegistration(actor.type)?.tricks;
     }
     collection.forEach((mod) => {
         const binding = mod.bind;
@@ -13670,7 +13697,7 @@ function listenAllMcEvents(collection) {
             return;
         }
         const status = Status.getOrCreate(pl.uniqueId);
-        const mod = ai.getRegistration(pl.type).tricks;
+        const mod = ai.getRegistration(pl.type)?.tricks;
         if (!mod) {
             return;
         }

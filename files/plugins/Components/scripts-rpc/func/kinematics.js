@@ -5,6 +5,7 @@ async function knockback(en, x, z, h, v) {
     const nx = x / m
     const nz = z / m
     return await remote.call('knockback', en.uniqueId, nx * h, nz * h, h, v)
+    // return await remote.call('impulse', en.uniqueId, nx * v * 0.2, 0, nz * v * 0.2)
 }
 
 async function impulse(en, x, y, z) {
