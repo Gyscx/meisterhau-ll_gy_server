@@ -11,6 +11,9 @@
             {
               "function": "enchant_random_gear",
               "chance": 0.5
+            },
+            {
+              "function": "random_dye"
             }
           ]
         },
@@ -22,6 +25,9 @@
             {
               "function": "enchant_random_gear",
               "chance": 0.5
+            },
+            {
+              "function": "random_dye"
             }
           ]
         }
