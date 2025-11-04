@@ -133,11 +133,11 @@ function select_ability_l(player) {
         currentScore = 0;
     }
     const btn2Text = currentScore === 1001
-        ? '§3窒息-消耗5级经验(cd 5秒)\n(对敌人锁喉并升空)'
-        : '窒息-消耗5级经验(cd 5秒)\n(对敌人锁喉并升空)';
+        ? '§3窒息-消耗5级经验(cd 15秒)\n(对敌人锁喉并升空)'
+        : '窒息-消耗5级经验(cd 15秒)\n(对敌人锁喉并升空)';
     const btn3Text = currentScore === 1002
-        ? '§3上勾拳-消耗5级经验(cd 5秒)\n(使敌人短暂升空并向前位移)'
-        : '上勾拳-消耗5级经验(cd 5秒)\n(使敌人短暂升空并向前位移)';
+        ? '§3上勾拳-消耗5级经验(cd 15秒)\n(使敌人短暂升空并向前位移)'
+        : '上勾拳-消耗5级经验(cd 15秒)\n(使敌人短暂升空并向前位移)';
     const btn9Text = currentScore === 100001
         ? '§3不携带技能'
         : '不携带技能';
@@ -188,11 +188,11 @@ function select_ability_d(player) {
         currentScore = 0;
     }
     const btn1Text = currentScore === 2001
-        ? '§3回旋-消耗5级经验(cd 5秒)\n(在敌人位置生成旋风)'
-        : '回旋-消耗5级经验(cd 5秒)\n(在敌人位置生成旋风)';
+        ? '§3回旋-消耗5级经验(cd 15秒)\n(在敌人位置生成旋风)'
+        : '回旋-消耗5级经验(cd 15秒)\n(在敌人位置生成旋风)';
     const btn2Text = currentScore === 2002
-        ? '§3移位-消耗5级经验(cd 5秒)\n(瞬间向前位移十格)'
-        : '移位-消耗5级经验(cd 5秒)\n(瞬间向前位移十格)';
+        ? '§3移位-消耗5级经验(cd 15秒)\n(瞬间向前位移十格)'
+        : '移位-消耗5级经验(cd 15秒)\n(瞬间向前位移十格)';
     const btn9Text = currentScore === 100001
         ? '§3不携带技能'
         : '不携带技能';
@@ -243,11 +243,11 @@ function select_ability_h(player) {
         currentScore = 0;
     }
     const btn1Text = currentScore === 3001
-        ? '§3迸火-消耗5级经验(cd 5秒)\n(在敌人位置迸发暗影火焰)'
-        : '迸火-消耗5级经验(cd 5秒)\n(在敌人位置迸发暗影火焰)';
+        ? '§3迸火-消耗5级经验(cd 15秒)\n(在敌人位置迸发暗影火焰)'
+        : '迸火-消耗5级经验(cd 15秒)\n(在敌人位置迸发暗影火焰)';
     const btn2Text = currentScore === 3002
-        ? '§3摧毁-消耗10级经验(cd 5秒)\n(砸地释放冲击波)'
-        : '摧毁-消耗10级经验(cd 5秒)\n(砸地释放冲击波)';
+        ? '§3摧毁-消耗10级经验(cd 15秒)\n(砸地释放冲击波)'
+        : '摧毁-消耗10级经验(cd 15秒)\n(砸地释放冲击波)';
     const btn9Text = currentScore === 100001
         ? '§3不携带技能'
         : '不携带技能';
@@ -321,7 +321,7 @@ world.afterEvents.itemUse.subscribe((t) => {
     }
     //窒息
     if (t.itemStack.typeId === 'sf:shadow_ability_legion' && !player.isSneaking && playerScore === 1001) {
-        const CHOKE_COOLDOWN = 35 * 20; // 游戏刻（20刻=1秒）
+        const CHOKE_COOLDOWN = 15 * 20; // 游戏刻（20刻=1秒）
         const playerId = player.id;
         const now = system.currentTick;
         if (skillCooldowns.has(playerId) && skillCooldowns.get(playerId).get(1001) > now) {
@@ -352,7 +352,7 @@ world.afterEvents.itemUse.subscribe((t) => {
     }
     //上勾拳
     if (t.itemStack.typeId === 'sf:shadow_ability_legion' && !player.isSneaking && playerScore === 1002) {
-        const UPPERCUT_COOLDOWN = 35 * 20;
+        const UPPERCUT_COOLDOWN = 15 * 20;
         const playerId = player.id;
         const now = system.currentTick;
         if (skillCooldowns.has(playerId) && skillCooldowns.get(playerId).get(1002) > now) {
@@ -383,7 +383,7 @@ world.afterEvents.itemUse.subscribe((t) => {
     }
     //回旋
     if (t.itemStack.typeId === 'sf:shadow_ability_dynasty' && !player.isSneaking && playerScore === 2001) {
-        const WHIRL_COOLDOWN = 35 * 20;
+        const WHIRL_COOLDOWN = 15 * 20;
         const playerId = player.id;
         const now = system.currentTick;
         if (skillCooldowns.has(playerId) && skillCooldowns.get(playerId).get(2001) > now) {
@@ -414,7 +414,7 @@ world.afterEvents.itemUse.subscribe((t) => {
     }
     //移位
     if (t.itemStack.typeId === 'sf:shadow_ability_dynasty' && !player.isSneaking && playerScore === 2002) {
-        const SHIFT_COOLDOWN = 35 * 20;
+        const SHIFT_COOLDOWN = 15 * 20;
         const playerId = player.id;
         const now = system.currentTick;
         if (skillCooldowns.has(playerId) && skillCooldowns.get(playerId).get(2002) > now) {
@@ -437,7 +437,7 @@ world.afterEvents.itemUse.subscribe((t) => {
     }
     //迸火
     if (t.itemStack.typeId === 'sf:shadow_ability_herald' && !player.isSneaking && playerScore === 3001) {
-        const ERUPTION_COOLDOWN = 35 * 20;
+        const ERUPTION_COOLDOWN = 15 * 20;
         const playerId = player.id;
         const now = system.currentTick;
         if (skillCooldowns.has(playerId) && skillCooldowns.get(playerId).get(3001) > now) {
@@ -468,7 +468,7 @@ world.afterEvents.itemUse.subscribe((t) => {
     }
     //摧毁
     if (t.itemStack.typeId === 'sf:shadow_ability_herald' && !player.isSneaking && playerScore === 3002) {
-        const BLAST_COOLDOWN = 35 * 20;
+        const BLAST_COOLDOWN = 15 * 20;
         const playerId = player.id;
         const now = system.currentTick;
         if (skillCooldowns.has(playerId) && skillCooldowns.get(playerId).get(3002) > now) {
