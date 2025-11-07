@@ -13,29 +13,32 @@ const CONFIG = {
 // 存储每个玩家的视角状态
 const playerPerspectives = new Map();
 
-// 获取玩家附近的实体数量
 function getNearbyEntityCount(player) {
     try {
         const location = player.location;
         const dimension = player.dimension;
 
-        // 创建查询选项
+        // 创建查询选项 - 正确筛选生物类型
         const queryOptions = new EntityQueryOptions();
         queryOptions.location = location;
         queryOptions.maxDistance = CONFIG.searchRadius;
+        // 排除玩家自身（避免误判）
+        queryOptions.excludeTypes = ["minecraft:player"];
+        // 不排除任何实体（我们通过排除玩家来间接获取生物）
+        queryOptions.includeTypes = [];
 
-        // 获取附近的所有实体
+        // 获取附近排除玩家的所有实体（即生物和其他实体）
         const nearbyEntities = dimension.getEntities(queryOptions);
 
-        // 计算数量（可选排除玩家自己）
-        let count = nearbyEntities.length;
-        if (CONFIG.excludeSelf) {
-            count = nearbyEntities.filter(entity => entity.id !== player.id).length;
-        }
+        // 进一步筛选出生物（根据实体是否有生命值组件判断）
+        const nearbyMobs = nearbyEntities.filter(entity => {
+            // 生物通常有生命值组件，非生物实体（如物品、矿车）没有
+            return entity.hasComponent("minecraft:health");
+        });
 
-        return count;
+        return nearbyMobs.length;
     } catch (error) {
-        console.warn(`获取玩家 ${player.name} 附近实体数量失败: ${error}`);
+        console.warn(`获取玩家 ${player.name} 附近生物数量失败: ${error}`);
         return 0;
     }
 }
