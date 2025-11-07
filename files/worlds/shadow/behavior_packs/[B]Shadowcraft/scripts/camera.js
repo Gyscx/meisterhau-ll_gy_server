@@ -6,7 +6,7 @@ const CONFIG = {
     searchRadius: 16, // 搜索附近实体的半径（格）
     perspective1: "ss:far_schema", // 人多时的视角
     perspective2: "ss:near_schema", // 人少时的视角
-    checkInterval: 100, // 检查间隔（游戏刻）
+    checkInterval: 20, // 检查间隔（游戏刻）
     excludeSelf: true // 是否排除玩家自己
 };
 
@@ -89,9 +89,18 @@ function checkAllPlayersPerspectives() {
     }
 }
 
-// 玩家加入时初始化视角
+// 玩家加入时初始化视角 - 修复事件获取玩家的方式
 world.afterEvents.playerJoin.subscribe((event) => {
-    const player = event.player;
+    // 通过 playerId 从世界中获取玩家对象
+    const players = world.getPlayers({
+        name: event.playerName // 或使用 id 筛选：ids: [event.playerId]
+    });
+    const player = players[0]; // 获取匹配的玩家（通常只有一个）
+
+    if (!player) {
+        console.warn(`未找到加入的玩家: ${event.playerName} (ID: ${event.playerId})`);
+        return;
+    }
 
     // 延迟一小段时间再检查，确保玩家完全加载
     system.runTimeout(() => {
@@ -99,9 +108,8 @@ world.afterEvents.playerJoin.subscribe((event) => {
     }, 10);
 });
 
-// 玩家移动时检查视角（可选，增加响应性）
+// 玩家重生时检查视角
 world.afterEvents.playerSpawn.subscribe((event) => {
-    // 玩家重生时也检查
     if (event.initialSpawn) {
         const player = event.player;
         system.runTimeout(() => {
@@ -128,7 +136,7 @@ system.run(() => {
 
 // 可选调试命令
 world.beforeEvents.chatSend.subscribe((event) => {
-    const message = event.message.toLowerCase();
+    const message = event.message;
     const player = event.sender;
 
     if (message === "!p1") {
