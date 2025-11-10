@@ -6,11 +6,12 @@ const CONFIG = {
     searchRadius: 16, // 搜索附近实体的半径（格）
     perspective1: "ss:far_schema", // 人多时的视角
     perspective2: "ss:near_schema", // 人少时的视角
-    checkInterval: 20, // 检查间隔（游戏刻）
-    excludeSelf: true // 是否排除玩家自己
+    excludeSelf: true, // 是否排除玩家自己
+    // 添加视角切换冷却时间（游戏刻），避免频繁切换
+    switchCooldown: 10
 };
 
-// 存储每个玩家的视角状态
+// 存储每个玩家的视角状态和最后切换时间
 const playerPerspectives = new Map();
 
 function getNearbyEntityCount(player) {
@@ -18,21 +19,18 @@ function getNearbyEntityCount(player) {
         const location = player.location;
         const dimension = player.dimension;
 
-        // 创建查询选项 - 正确筛选生物类型
+        // 创建查询选项
         const queryOptions = new EntityQueryOptions();
         queryOptions.location = location;
         queryOptions.maxDistance = CONFIG.searchRadius;
-        // 排除玩家自身（避免误判）
         queryOptions.excludeTypes = ["minecraft:player"];
-        // 不排除任何实体（我们通过排除玩家来间接获取生物）
         queryOptions.includeTypes = [];
 
-        // 获取附近排除玩家的所有实体（即生物和其他实体）
+        // 获取附近排除玩家的所有实体
         const nearbyEntities = dimension.getEntities(queryOptions);
 
-        // 进一步筛选出生物（根据实体是否有生命值组件判断）
+        // 筛选出生物（根据实体是否有生命值组件判断）
         const nearbyMobs = nearbyEntities.filter(entity => {
-            // 生物通常有生命值组件，非生物实体（如物品、矿车）没有
             return entity.hasComponent("minecraft:health");
         });
 
@@ -59,23 +57,36 @@ function setPlayerCamera(player, perspective) {
 
 // 检查单个玩家的周围环境并切换视角
 function checkAndSwitchPlayerPerspective(player) {
-    const nearbyCount = getNearbyEntityCount(player);
     const playerId = player.id;
+    const now = system.currentTick;
+
+    // 获取玩家当前状态
+    const playerState = playerPerspectives.get(playerId) || {
+        perspective: null,
+        lastSwitchTick: 0
+    };
+
+    // 检查冷却时间，避免频繁切换
+    if (now - playerState.lastSwitchTick < CONFIG.switchCooldown) {
+        return;
+    }
+
+    const nearbyCount = getNearbyEntityCount(player);
 
     // 确定应该使用的视角
     const targetPerspective = nearbyCount > CONFIG.nearbyEntityThreshold ?
         CONFIG.perspective1 : CONFIG.perspective2;
 
-    // 获取玩家当前的视角状态
-    const currentPerspective = playerPerspectives.get(playerId);
-
     // 如果视角没有变化，则不执行操作
-    if (currentPerspective === targetPerspective) {
+    if (playerState.perspective === targetPerspective) {
         return;
     }
 
-    // 更新视角状态
-    playerPerspectives.set(playerId, targetPerspective);
+    // 更新视角状态和时间
+    playerPerspectives.set(playerId, {
+        perspective: targetPerspective,
+        lastSwitchTick: now
+    });
 
     // 设置新视角
     if (setPlayerCamera(player, targetPerspective)) {
@@ -83,22 +94,12 @@ function checkAndSwitchPlayerPerspective(player) {
     }
 }
 
-// 检查所有玩家的视角
-function checkAllPlayersPerspectives() {
-    const allPlayers = world.getPlayers();
-
-    for (const player of allPlayers) {
-        checkAndSwitchPlayerPerspective(player);
-    }
-}
-
-// 玩家加入时初始化视角 - 修复事件获取玩家的方式
+// 玩家加入时初始化视角
 world.afterEvents.playerJoin.subscribe((event) => {
-    // 通过 playerId 从世界中获取玩家对象
     const players = world.getPlayers({
-        name: event.playerName // 或使用 id 筛选：ids: [event.playerId]
+        name: event.playerName
     });
-    const player = players[0]; // 获取匹配的玩家（通常只有一个）
+    const player = players[0];
 
     if (!player) {
         console.warn(`未找到加入的玩家: ${event.playerName} (ID: ${event.playerId})`);
@@ -121,10 +122,23 @@ world.afterEvents.playerSpawn.subscribe((event) => {
     }
 });
 
-// 定时检查所有玩家的视角
-system.runInterval(() => {
-    checkAllPlayersPerspectives();
-}, CONFIG.checkInterval);
+// 监听玩家受伤事件
+world.afterEvents.entityHurt.subscribe((event) => {
+    const entity = event.hurtEntity;
+    if (entity.typeId === "minecraft:player") {
+        checkAndSwitchPlayerPerspective(entity);
+    }
+});
+
+// 监听玩家挥动手臂事件
+world.afterEvents.playerSwing.subscribe((event) => {
+    checkAndSwitchPlayerPerspective(event.player);
+});
+
+// 监听玩家视角转动事件
+world.afterEvents.playerRotated.subscribe((event) => {
+    checkAndSwitchPlayerPerspective(event.player);
+});
 
 // 初始化时设置所有玩家的视角
 system.run(() => {
@@ -134,37 +148,5 @@ system.run(() => {
         checkAndSwitchPlayerPerspective(player);
     }
 
-    console.log(`相机视角脚本初始化完成！基于附近实体数量切换视角`);
-});
-
-// 可选调试命令
-world.beforeEvents.chatSend.subscribe((event) => {
-    const message = event.message;
-    const player = event.sender;
-
-    if (message === "!p1") {
-        event.cancel = true;
-        if (setPlayerCamera(player, CONFIG.perspective1)) {
-            playerPerspectives.set(player.id, CONFIG.perspective1);
-            player.sendMessage(`已手动切换到视角1: ${CONFIG.perspective1}`);
-        }
-    } else if (message === "!p2") {
-        event.cancel = true;
-        if (setPlayerCamera(player, CONFIG.perspective2)) {
-            playerPerspectives.set(player.id, CONFIG.perspective2);
-            player.sendMessage(`已手动切换到视角2: ${CONFIG.perspective2}`);
-        }
-    } else if (message === "!camstatus") {
-        event.cancel = true;
-        const nearbyCount = getNearbyEntityCount(player);
-        const currentPerspective = playerPerspectives.get(player.id) || "未知";
-        player.sendMessage(`附近实体: ${nearbyCount}, 当前视角: ${currentPerspective}, 阈值: ${CONFIG.nearbyEntityThreshold}`);
-    } else if (message === "!camreset") {
-        event.cancel = true;
-        checkAndSwitchPlayerPerspective(player);
-        player.sendMessage(`已根据附近实体数量重置视角`);
-    } else if (message === "!camradius") {
-        event.cancel = true;
-        player.sendMessage(`检测半径: ${CONFIG.searchRadius} 格`);
-    }
+    console.log(`相机视角脚本初始化完成！基于玩家交互和实体数量切换视角`);
 });
