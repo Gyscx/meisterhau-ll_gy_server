@@ -130,11 +130,6 @@ world.afterEvents.entityHurt.subscribe((event) => {
     }
 });
 
-// 监听玩家挥动手臂事件
-world.afterEvents.playerSwing.subscribe((event) => {
-    checkAndSwitchPlayerPerspective(event.player);
-});
-
 // 监听玩家视角转动事件
 world.afterEvents.playerRotated.subscribe((event) => {
     checkAndSwitchPlayerPerspective(event.player);
