@@ -1,13 +1,12 @@
-import { world, system, EntityQueryOptions } from "@minecraft/server";
+import { world, system } from "@minecraft/server"; // 移除 EntityQueryOptions 导入
 
 // 配置参数
 const CONFIG = {
-    nearbyEntityThreshold: 5, // 附近实体数量的阈值
-    searchRadius: 16, // 搜索附近实体的半径（格）
-    perspective1: "ss:far_schema", // 人多时的视角
-    perspective2: "ss:near_schema", // 人少时的视角
-    excludeSelf: true, // 是否排除玩家自己
-    // 添加视角切换冷却时间（游戏刻），避免频繁切换
+    nearbyEntityThreshold: 5,
+    searchRadius: 16,
+    perspective1: "ss:far_schema",
+    perspective2: "ss:near_schema",
+    excludeSelf: true,
     switchCooldown: 10
 };
 
@@ -19,12 +18,13 @@ function getNearbyEntityCount(player) {
         const location = player.location;
         const dimension = player.dimension;
 
-        // 创建查询选项
-        const queryOptions = new EntityQueryOptions();
-        queryOptions.location = location;
-        queryOptions.maxDistance = CONFIG.searchRadius;
-        queryOptions.excludeTypes = ["minecraft:player"];
-        queryOptions.includeTypes = [];
+        // 直接使用对象字面量代替接口实例化（符合 EntityQueryOptions 结构）
+        const queryOptions = {
+            location: location,
+            maxDistance: CONFIG.searchRadius,
+            excludeTypes: ["minecraft:player"],
+            includeTypes: []
+        };
 
         // 获取附近排除玩家的所有实体
         const nearbyEntities = dimension.getEntities(queryOptions);
@@ -90,7 +90,7 @@ function checkAndSwitchPlayerPerspective(player) {
 
     // 设置新视角
     if (setPlayerCamera(player, targetPerspective)) {
-        console.log(`玩家 ${player.name} 视角切换: 附近 ${nearbyCount} 个实体, 使用 ${targetPerspective} 视角`);
+        world.sendMessage(`玩家 ${player.name} 视角切换: 附近 ${nearbyCount} 个实体, 使用 ${targetPerspective} 视角`);
     }
 }
 
@@ -120,19 +120,6 @@ world.afterEvents.playerSpawn.subscribe((event) => {
             checkAndSwitchPlayerPerspective(player);
         }, 10);
     }
-});
-
-// 监听玩家受伤事件
-world.afterEvents.entityHurt.subscribe((event) => {
-    const entity = event.hurtEntity;
-    if (entity.typeId === "minecraft:player") {
-        checkAndSwitchPlayerPerspective(entity);
-    }
-});
-
-// 监听玩家视角转动事件
-world.afterEvents.playerRotated.subscribe((event) => {
-    checkAndSwitchPlayerPerspective(event.player);
 });
 
 // 初始化时设置所有玩家的视角
